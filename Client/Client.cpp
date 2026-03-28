@@ -70,7 +70,10 @@ int main(int argc, char* argv[]) {
 	//Отправка данных на клиенте
 	const int buflen = 512;
 
-	const char* sendbuf = "this is test";
+	char* sendbuf;
+
+	std::cout << "напишите сообщение..." << std::endl;
+	std::cin >> sendbuf ;
 
 	char recbuf[buflen];
 

@@ -6,9 +6,19 @@
 #include <iphlpapi.h>
 #include <iostream>
 
+#include <mutex>
+#include <vector>
+
 #pragma comment(lib, "Ws2_32.lib")
 
+
 using namespace std;
+
+vector<SOCKET> clients;
+mutex ClientsMTX;
+int Clients_Count = 1;
+
+
 
 int main(int argc, char* argv[]) {
 
