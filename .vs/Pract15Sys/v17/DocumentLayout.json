@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\anton\\Desktop\\Pract15Sys\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{34201320-8C3D-4212-8127-73F9888E5862}|Pract15Sys\\Pract15Sys.vcxproj|C:\\Users\\anton\\Desktop\\Pract15Sys\\Pract15Sys\\Pract15Sys.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{34201320-8C3D-4212-8127-73F9888E5862}|Pract15Sys\\Pract15Sys.vcxproj|solutionrelative:Pract15Sys\\Pract15Sys.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Pract15Sys.cpp",
+              "DocumentMoniker": "C:\\Users\\anton\\Desktop\\Pract15Sys\\Pract15Sys\\Pract15Sys.cpp",
+              "RelativeDocumentMoniker": "Pract15Sys\\Pract15Sys.cpp",
+              "ToolTip": "C:\\Users\\anton\\Desktop\\Pract15Sys\\Pract15Sys\\Pract15Sys.cpp",
+              "RelativeToolTip": "Pract15Sys\\Pract15Sys.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-03-28T04:49:29.549Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
