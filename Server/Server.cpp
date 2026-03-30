@@ -3,141 +3,174 @@
 #include <Windows.h>
 #include <winsock2.h>
 #include <WS2tcpip.h>
-#include <iphlpapi.h>
 #include <iostream>
-
-#include <mutex>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <string>
 
 #pragma comment(lib, "Ws2_32.lib")
 
+#define DEFAULT_PORT "27015"
+#define BUF_SIZE 512
 
 using namespace std;
 
-vector<SOCKET> clients;
-mutex ClientsMTX;
-int Clients_Count = 1;
+struct ClientInfo {
+    SOCKET socket;
+    int id;
+    string name;
+};
+
+vector<ClientInfo> clients; 
+vector<string>History;
+HANDLE hMutex;
+int userCounter = 1; 
+
+// Рассылка сообщений
+void BroadcastMessage(const string& message, SOCKET senderSocket = INVALID_SOCKET) {
+
+    WaitForSingleObject(hMutex, INFINITE);
+
+    History.push_back(message);
+
+    for (const ClientInfo& client : clients) {
+        if (client.socket != senderSocket) {
+            send(client.socket, message.c_str(), (int)message.size(), 0);
+        }
+    }
+    ReleaseMutex(hMutex);
+}
+
+void HandleClient(SOCKET clientSocket, int userId) {
+    char recvbuf[BUF_SIZE];
+    int iResult;
+    string userName;
+
+    ZeroMemory(recvbuf, BUF_SIZE);
+    iResult = recv(clientSocket, recvbuf, BUF_SIZE, 0);
+
+    if (iResult > 0) {
+        userName = string(recvbuf, iResult);
 
 
+
+        WaitForSingleObject(hMutex, INFINITE);
+            //string header = "-----------------";
+            //send(clientSocket, header.c_str(), (int)header.size(), 0);
+
+        for (const string& mess : History)
+        {
+            send(clientSocket, mess.c_str(), (int)mess.size(), 0);
+        }
+
+
+
+        clients.push_back({ clientSocket, userId, userName });
+        ReleaseMutex(hMutex);
+    }
+    else {
+        closesocket(clientSocket);
+        return;
+    }
+
+    string joinMsg = "[SERVER]: " + userName + " (ID: " + to_string(userId) + ") joined\n";
+    cout << joinMsg;
+    BroadcastMessage(joinMsg, clientSocket);
+
+    
+
+
+
+
+    // ---------------------------------
+            // ---------------------------------
+            // ---------------------------------
+
+
+
+
+
+    while (true) {
+        ZeroMemory(recvbuf, BUF_SIZE);
+        iResult = recv(clientSocket, recvbuf, BUF_SIZE, 0);
+
+        if (iResult > 0) {
+            string msg(recvbuf, iResult);
+
+            if (msg.find("/exit") == 0) break;
+
+            if (msg.find("/users") == 0) {
+                string userList = "\nUSERS\n";
+                {
+                    WaitForSingleObject(hMutex, INFINITE);
+                    for (const ClientInfo& c : clients) {
+                        userList += "ID " + to_string(c.id) + ": " + c.name + "\n";
+                    }
+                    ReleaseMutex(hMutex);
+                }
+                userList += "----------------------\n";
+
+                // тому кто просил
+                send(clientSocket, userList.c_str(), (int)userList.size(), 0);
+                continue;
+            }
+
+            string broadcastMsg = "[" + userName + "]: " + msg + "\n";
+            cout << broadcastMsg;
+            BroadcastMessage(broadcastMsg, clientSocket);
+        }
+        else {
+            break;
+        }
+    }
+
+    string leftMsg = "[SERVER]: " + userName + " left\n";
+    cout << leftMsg;
+    BroadcastMessage(leftMsg, clientSocket);
+    {
+        WaitForSingleObject(hMutex, INFINITE);
+        for (auto it = clients.begin(); it != clients.end(); ++it) {
+            if (it->socket == clientSocket) {
+                clients.erase(it);
+                break; 
+            }
+        }
+        ReleaseMutex(hMutex);
+    }
+    closesocket(clientSocket);
+}
 
 int main(int argc, char* argv[]) {
 
-	WSAData wsaData;
+    WSAData wsaData;
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
+    struct addrinfo* result = NULL, hints;
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags = AI_PASSIVE;
+    getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+    SOCKET ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+    listen(ListenSocket, SOMAXCONN);
 
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    hMutex = CreateMutex(NULL, FALSE, NULL);
 
-	if (iResult != 0) {
-		cout << "WSAStartup filed: " << iResult << endl;
-		return 1;
-	}
+    cout << "Server started" << endl;
 
+    while (true) {
+        SOCKET ClientSocket = accept(ListenSocket, NULL, NULL);
+        if (ClientSocket == INVALID_SOCKET) continue;
 
-	//Создание сокета для сервера
-	#define DEFAULT_PORT "27015"
+        thread clientThread(HandleClient, ClientSocket, userCounter);
+        clientThread.detach();
 
-	struct addrinfo* result = NULL, * ptr = NULL, hints;
-	ZeroMemory(&hints, sizeof(hints));
+        userCounter++; 
+    }
 
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
-
-	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-
-	if (iResult != 0) {
-		cout << "getaddrinfo error: " << iResult << endl;
-		WSACleanup();
-		return 1;
-	}
-
-
-	//Создание сокета для сервера
-	SOCKET ListenSocket = INVALID_SOCKET;
-
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-
-	if (ListenSocket == INVALID_SOCKET) {
-		cout << "error at socket(): " << WSAGetLastError() << endl;
-		freeaddrinfo(result);
-		WSACleanup();
-		return 1;
-	}
-
-	//Привязка сокета
-	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-
-	if (iResult == SOCKET_ERROR) {
-		cout << "bind filed: " << WSAGetLastError() << endl;
-		freeaddrinfo(result);
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-
-
-	//Прослушивание сокета
-	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
-		cout << "Listen failed: " << WSAGetLastError() << endl;
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-
-
-	//принятие подключения
-	SOCKET ClientSocket = INVALID_SOCKET;
-
-	ClientSocket = accept(ListenSocket, NULL, NULL);
-
-	if (ClientSocket == INVALID_SOCKET) {
-		cout << "accept filed: " << WSAGetLastError() << endl;
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	//Получение и отправка данных в сокете
-	const int buflen = 512;
-	iResult = 0;
-	int sendResult;
-	char recvbuf[buflen];
-	const char* sendbuf = "send from server";
-	do {
-		iResult = recv(ClientSocket, recvbuf, buflen, 0);
-		if (iResult > 0) {
-			cout << "Receved bytes: " << iResult << endl;
-			sendResult = send(ClientSocket, sendbuf, sizeof(sendbuf), 0);
-			if (sendResult == SOCKET_ERROR) {
-				cout << "send filed" << WSAGetLastError();
-				closesocket(ClientSocket);
-				WSACleanup();
-				return 1;
-			}
-			cout << "Bytes send: " << sendResult << endl;
-		}
-		else if (iResult == 0)
-			cout << "connection closed" << endl;
-		else {
-			cout << "recv filed: " << WSAGetLastError();
-			closesocket(ClientSocket);
-			WSACleanup();
-			return 1;
-		}
-	} while (iResult > 0);
-
-	//Отключение сервера
-	iResult = shutdown(ClientSocket, SD_SEND);
-
-	if (iResult == SOCKET_ERROR) {
-		cout << "error shutdown: " << WSAGetLastError() << endl;
-		closesocket(ClientSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	closesocket(ClientSocket);
-	WSACleanup();
-
-	return 0;
+    closesocket(ListenSocket);
+    WSACleanup();
+    return 0;
 }
