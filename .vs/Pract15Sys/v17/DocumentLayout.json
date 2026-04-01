@@ -1,10 +1,14 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\anton\\Desktop\\Pract15Sys\\",
+  "WorkspaceRootPath": "C:\\Users\\st310-10\\Desktop\\Pract15Sys\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{34201320-8C3D-4212-8127-73F9888E5862}|Pract15Sys\\Pract15Sys.vcxproj|C:\\Users\\anton\\Desktop\\Pract15Sys\\Pract15Sys\\Pract15Sys.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{34201320-8C3D-4212-8127-73F9888E5862}|Pract15Sys\\Pract15Sys.vcxproj|solutionrelative:Pract15Sys\\Pract15Sys.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{C566684E-8067-4610-918B-183B1B34F126}|Server\\Server.vcxproj|C:\\Users\\st310-10\\Desktop\\Pract15Sys\\Server\\Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{C566684E-8067-4610-918B-183B1B34F126}|Server\\Server.vcxproj|solutionrelative:Server\\Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5AE09F91-E79C-472F-B03A-CE9DB543A24E}|Client\\Client.vcxproj|C:\\Users\\st310-10\\Desktop\\Pract15Sys\\Client\\Client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{5AE09F91-E79C-472F-B03A-CE9DB543A24E}|Client\\Client.vcxproj|solutionrelative:Client\\Client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,19 +18,31 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Pract15Sys.cpp",
-              "DocumentMoniker": "C:\\Users\\anton\\Desktop\\Pract15Sys\\Pract15Sys\\Pract15Sys.cpp",
-              "RelativeDocumentMoniker": "Pract15Sys\\Pract15Sys.cpp",
-              "ToolTip": "C:\\Users\\anton\\Desktop\\Pract15Sys\\Pract15Sys\\Pract15Sys.cpp",
-              "RelativeToolTip": "Pract15Sys\\Pract15Sys.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAPAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "Client.cpp",
+              "DocumentMoniker": "C:\\Users\\st310-10\\Desktop\\Pract15Sys\\Client\\Client.cpp",
+              "RelativeDocumentMoniker": "Client\\Client.cpp",
+              "ToolTip": "C:\\Users\\st310-10\\Desktop\\Pract15Sys\\Client\\Client.cpp",
+              "RelativeToolTip": "Client\\Client.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-03-28T04:49:29.549Z",
+              "WhenOpened": "2026-04-01T05:38:52.38Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Server.cpp",
+              "DocumentMoniker": "C:\\Users\\st310-10\\Desktop\\Pract15Sys\\Server\\Server.cpp",
+              "RelativeDocumentMoniker": "Server\\Server.cpp",
+              "ToolTip": "C:\\Users\\st310-10\\Desktop\\Pract15Sys\\Server\\Server.cpp",
+              "RelativeToolTip": "Server\\Server.cpp",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAAAgAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-04-01T05:38:46.204Z",
               "EditorCaption": ""
             }
           ]

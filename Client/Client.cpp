@@ -1,49 +1,40 @@
 ﻿#define WIN32_LEAN_AND_MEAN
-
 #include <Windows.h>
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <iostream>
 #include <string>
-#include <thread>
 
 #pragma comment(lib, "Ws2_32.lib")
-
 #define DEFAULT_PORT "27015"
 #define BUF_SIZE 512
-
 using namespace std;
 
-//  прослушиваниe сообщений 
-void ReceiveThread(SOCKET ConnectSocket) {
+DWORD WINAPI ReceiveThread(LPVOID lpParam) {
+    SOCKET ConnectSocket = (SOCKET)lpParam;
     char recvbuf[BUF_SIZE];
     int iResult;
 
     while (true) {
         ZeroMemory(recvbuf, BUF_SIZE);
         iResult = recv(ConnectSocket, recvbuf, BUF_SIZE, 0);
-        if (iResult > 0) {
-            cout << string(recvbuf, iResult);
-        }
+        if (iResult > 0) cout << string(recvbuf, iResult);
         else {
-            cout << "\n[Disconnected from server]" << endl;
+            cout << "\n[Server connection exit]" << endl;
             break;
         }
     }
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        cout << "Usage: " << argv[0] << " <server_ip_address>\nExample: " << argv[0] << " 127.0.0.1" << endl;
+        cout << "erreor." << endl;
         return 1;
     }
 
     WSAData wsaData;
-    int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (iResult != 0) {
-        cout << "WSAStartup failed: " << iResult << endl;
-        return 1;
-    }
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
 
     struct addrinfo* result = NULL, hints;
     ZeroMemory(&hints, sizeof(hints));
@@ -51,88 +42,49 @@ int main(int argc, char* argv[]) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    iResult = getaddrinfo(argv[1], DEFAULT_PORT, &hints, &result);
-    if (iResult != 0) {
-        cout << "getaddrinfo error: " << iResult << endl;
-        WSACleanup();
-        return 1;
-    }
-
+    getaddrinfo(argv[1], DEFAULT_PORT, &hints, &result);
     SOCKET ConnectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-    if (ConnectSocket == INVALID_SOCKET) {
-        cout << "Error at socket(): " << WSAGetLastError() << endl;
-        freeaddrinfo(result);
-        WSACleanup();
-        return 1;
-    }
-
-    iResult = connect(ConnectSocket, result->ai_addr, (int)result->ai_addrlen);
-    if (iResult == SOCKET_ERROR) {
-        cout << "Cannot connect to server." << endl;
-        closesocket(ConnectSocket);
-        freeaddrinfo(result);
-        WSACleanup();
-        return 1;
-    }
+    connect(ConnectSocket, result->ai_addr, (int)result->ai_addrlen);
     freeaddrinfo(result);
 
-    cout << "Connected to the chat! Type '/exit' to leave." << endl;
+    cout << "Connected Type your name: ";
+    string name;
+    getline(cin, name);
+    send(ConnectSocket, name.c_str(), (int)name.size(), 0);
 
-    thread recvThread(ReceiveThread, ConnectSocket);
-    recvThread.detach();
+    HANDLE hThread = CreateThread(NULL, 0, ReceiveThread, (LPVOID)ConnectSocket, 0, NULL);
+    if (hThread) CloseHandle(hThread);
 
-    // читаем 
     string userInput;
 
-    cout << "Type your name" << endl;
-
-    getline(cin, userInput);
-
-    iResult = send(ConnectSocket, userInput.c_str(), (int)userInput.size(), 0);
-    if (iResult == SOCKET_ERROR) {
-        cout << "send failed: " << WSAGetLastError() << endl;
-    }
-
-    Sleep(500);
+    ULONGLONG lastMessageTime = 0;  
+     int SPAM_DELAY = 1000;   
 
     while (true) {
         getline(cin, userInput);
         if (userInput.empty()) continue;
 
+        ULONGLONG currentTime = GetTickCount64();
+        if (currentTime - lastMessageTime < SPAM_DELAY) {
+            cout << "[SYSTEM]: Do not spam" << endl;
+            continue; 
+        }
+        lastMessageTime = currentTime; 
+
         if (userInput[0] == '/') {
-
-            if (userInput.length() > 1 && userInput[1] == '/') {
-                cout << "Only one slash agreed" << endl;
-                continue;  
-            }
-
             string command = userInput.substr(1);
-
-            if (command == "exit") {
+            if (command == "exit")
                 break;
-            }
-            
-            if (command == "users")
-            {
+            if (command == "users") {
                 send(ConnectSocket, userInput.c_str(), (int)userInput.size(), 0);
                 continue;
             }
-            else {
-                cout << "command '" << command << "' doesn't exist" << endl;
-                continue; 
-            }
         }
 
-        iResult = send(ConnectSocket, userInput.c_str(), (int)userInput.size(), 0);
-        if (iResult == SOCKET_ERROR) {
-            cout << "send failed: " << WSAGetLastError() << endl;
-            break;
-        }
+        send(ConnectSocket, userInput.c_str(), (int)userInput.size(), 0);
     }
 
-    shutdown(ConnectSocket, SD_SEND);
     closesocket(ConnectSocket);
     WSACleanup();
-
     return 0;
 }
